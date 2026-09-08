@@ -3,8 +3,147 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:helpers="clr-namespace:RetailFlow.Helpers"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <TextBlock Text="Product management (list, add, edit, search, deactivate) will be added in Phase 5."
-               FontSize="14" Foreground="#6B7280" TextWrapping="Wrap"/>
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+        <helpers:BoolToActiveStatusConverter x:Key="BoolToActiveStatusConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT: search toolbar + product list -->
+        <Grid Grid.Column="0" Margin="0,0,20,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="SearchTextBox" Grid.Column="0"
+                         Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,12,0"/>
+
+                <CheckBox x:Name="ShowInactiveCheckBox" Grid.Column="1"
+                          Content="Show inactive"
+                          IsChecked="{Binding ShowInactive}"
+                          VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                <Button x:Name="NewProductButton" Grid.Column="2"
+                        Content="+ New Product"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding NewProductCommand}"/>
+            </Grid>
+
+            <DataGrid x:Name="ProductsDataGrid" Grid.Row="1"
+                      ItemsSource="{Binding Products}"
+                      SelectedItem="{Binding SelectedProduct}"
+                      ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      CanUserReorderColumns="False"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#F0F1F3"
+                      HeadersVisibility="Column"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      Background="White"
+                      RowHeight="36"
+                      FontSize="13"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Code" Binding="{Binding ProductCode}" Width="80"/>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="110"/>
+                    <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat='Rs. {0:N2}'}" Width="100"/>
+                    <DataGridTextColumn Header="Stock" Binding="{Binding StockQuantity}" Width="60"/>
+                    <DataGridTextColumn Header="Reorder" Binding="{Binding ReorderLevel}" Width="70"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding IsActive, Converter={StaticResource BoolToActiveStatusConverter}}" Width="70"/>
+                </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </Grid>
+
+        <!-- RIGHT: add / edit form -->
+        <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="20">
+            <StackPanel>
+                <TextBlock Text="{Binding FormTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+                <TextBlock Text="Product Code" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductCodeTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormProductCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Product Name" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductNameTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Category" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductCategoryTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormCategory, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Price (Rs.)" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductPriceTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormPrice, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Stock Quantity" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductStockTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormStockQuantity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Reorder Level" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="ProductReorderTextBox" Style="{StaticResource FormTextBoxStyle}"
+                         Text="{Binding FormReorderLevel, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"/>
+
+                <TextBlock x:Name="StatusMessageText" Text="{Binding StatusMessage}"
+                           TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="#16A34A"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                    <Setter Property="Foreground" Value="#DC2626"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Button x:Name="SaveProductButton" Content="Save"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
+                    <Button x:Name="CancelProductButton" Content="Cancel"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding CancelCommand}"/>
+                </StackPanel>
+
+                <Button x:Name="ToggleActiveButton" Content="{Binding ToggleActiveButtonText}"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Command="{Binding ToggleActiveCommand}"
+                        HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>
