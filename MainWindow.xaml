@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RetailFlow"
         mc:Ignorable="d"
-        Title="RetailFlow - Retail Inventory &amp; Sales Management System"
+        Title="MiniMart Manager - Retail Inventory &amp; Sales Management System"
         Height="650" Width="1000" MinHeight="500" MinWidth="800"
         WindowStartupLocation="CenterScreen">
 
@@ -19,7 +19,7 @@
         <Border Grid.Column="0" Background="#1F2937">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Top" Margin="0,20,0,30">
-                    <TextBlock Text="RetailFlow" FontSize="22" FontWeight="Bold"
+                    <TextBlock Text="MiniMart Manager" FontSize="22" FontWeight="Bold"
                                Foreground="White" Margin="20,0,0,4"/>
                     <TextBlock Text="Inventory &amp; Sales" FontSize="11"
                                Foreground="#9CA3AF" Margin="20,0,0,0"/>
