@@ -15,6 +15,10 @@ namespace RetailFlow.ViewModels;
 /// </summary>
 public class DashboardViewModel : ViewModelBase
 {
+    // How many rows each summary list shows — a Dashboard is meant to be a quick glance,
+    // not a full report (that's what the Products/Transactions screens are for).
+    private const int SummaryListSize = 5;
+
     private readonly DashboardService _dashboardService = new();
     private readonly ProductService _productService = new();
     private readonly SalesService _salesService = new();
@@ -73,13 +77,13 @@ public class DashboardViewModel : ViewModelBase
             LowStockCount = lowStock.Count;
 
             LowStockProducts.Clear();
-            foreach (var product in lowStock.Take(5))
+            foreach (var product in lowStock.Take(SummaryListSize))
             {
                 LowStockProducts.Add(product);
             }
 
             RecentTransactions.Clear();
-            foreach (var sale in _salesService.GetRecentSales(5))
+            foreach (var sale in _salesService.GetRecentSales(SummaryListSize))
             {
                 RecentTransactions.Add(sale);
             }

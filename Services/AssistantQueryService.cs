@@ -16,6 +16,11 @@ namespace RetailFlow.Services;
 /// </summary>
 public class AssistantQueryService
 {
+    // How many matching products a stock search lists inline before summarizing the
+    // rest as "...and N more." — keeps a broad match (e.g. a whole category) readable
+    // in a chat reply instead of dumping the entire result set.
+    private const int MaxStockResultsListed = 5;
+
     private readonly ProductService _productService = new();
     private readonly SalesService _salesService = new();
     private readonly DashboardService _dashboardService = new();
@@ -388,11 +393,11 @@ public class AssistantQueryService
             return new AssistantResponse { Message = $"{product.Name} currently has {product.StockQuantity} unit(s) in stock." };
         }
 
-        var lines = matches.Take(5).Select(p => $"{p.Name} — {p.StockQuantity} units");
+        var lines = matches.Take(MaxStockResultsListed).Select(p => $"{p.Name} — {p.StockQuantity} units");
         var message = $"I found {matches.Count} products matching \"{term}\":\n\n" + string.Join("\n", lines);
-        if (matches.Count > 5)
+        if (matches.Count > MaxStockResultsListed)
         {
-            message += $"\n...and {matches.Count - 5} more.";
+            message += $"\n...and {matches.Count - MaxStockResultsListed} more.";
         }
         message += "\n\nOpening stock results.";
 
