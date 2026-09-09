@@ -115,7 +115,6 @@ public partial class MainWindow : Window
 
             case "Transactions":
                 ShowTransactions();
-                _transactionsView.ViewModel.SearchText = response.SearchTerm ?? string.Empty;
                 _transactionsView.ViewModel.FromDate = response.StartDate;
                 _transactionsView.ViewModel.ToDate = response.EndDate;
                 break;

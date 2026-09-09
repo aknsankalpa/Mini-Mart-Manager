@@ -3,135 +3,301 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:charts="clr-namespace:RetailFlow.Views.Charts"
+             xmlns:vm="clr-namespace:RetailFlow.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="1000">
+             d:DesignHeight="900" d:DesignWidth="1500">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>
 
-            <!-- Headline stat tiles -->
-            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,20">
-                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
-                    <StackPanel>
-                        <TextBlock Text="PRODUCTS" Style="{StaticResource DashboardStatLabelStyle}"/>
-                        <TextBlock x:Name="ProductsStatText" Text="{Binding ActiveProductCount}"
-                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#2563EB"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Filter bar: Date range / Category / Product slicers, Reset, Refresh -->
+        <Border Grid.Row="0" Style="{StaticResource ChartCardStyle}" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Date Range" VerticalAlignment="Center" FontSize="12" Foreground="#374151" Margin="0,0,8,0"/>
+                <ComboBox x:Name="DateRangeComboBox" Width="130" Margin="0,0,16,0"
+                          SelectedValue="{Binding SelectedDateRangePreset}" SelectedValuePath="Content">
+                    <ComboBoxItem Content="Today"/>
+                    <ComboBoxItem Content="Last 7 Days"/>
+                    <ComboBoxItem Content="Last 30 Days"/>
+                    <ComboBoxItem Content="This Month"/>
+                    <ComboBoxItem Content="Custom Range"/>
+                </ComboBox>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsCustomRange, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <DatePicker x:Name="CustomStartDatePicker" Width="115" Margin="0,0,6,0" SelectedDate="{Binding StartDate}"/>
+                    <TextBlock Text="to" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" Foreground="#374151"/>
+                    <DatePicker x:Name="CustomEndDatePicker" Width="115" Margin="0,0,10,0" SelectedDate="{Binding EndDate}"/>
+                    <Button x:Name="ApplyCustomRangeButton" Content="Apply"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding ApplyCustomRangeCommand}" Margin="0,0,16,0"/>
+                </StackPanel>
+
+                <TextBlock Text="Category" VerticalAlignment="Center" FontSize="12" Foreground="#374151" Margin="0,0,8,0"/>
+                <ComboBox x:Name="CategoryComboBox" Width="140" Margin="0,0,16,0"
+                          ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"/>
+
+                <TextBlock Text="Product" VerticalAlignment="Center" FontSize="12" Foreground="#374151" Margin="0,0,8,0"/>
+                <ComboBox x:Name="ProductComboBox" Width="180" Margin="0,0,16,0"
+                          ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}"
+                          DisplayMemberPath="Name"/>
+
+                <Button x:Name="ResetFiltersButton" Content="Reset Filters"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding ResetFiltersCommand}" Margin="0,0,8,0"/>
+                <Button x:Name="RefreshButton" Content="↻ Refresh"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding RefreshCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- KPI cards -->
+        <UniformGrid Grid.Row="1" Rows="1" Columns="4" Margin="0,0,0,12">
+            <Border Style="{StaticResource KpiCardStyle}" Margin="0,0,12,0">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="#DCFCE7" Margin="0,0,8,0">
+                            <TextBlock Text="💰" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="SALES (SELECTED PERIOD)" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                </Border>
+                    <TextBlock Text="{Binding PeriodSalesTotal, StringFormat='Rs. {0:N2}'}"
+                               FontSize="22" FontWeight="Bold" Foreground="#16A34A"/>
+                </StackPanel>
+            </Border>
 
-                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
-                    <StackPanel>
-                        <TextBlock Text="TODAY'S SALES" Style="{StaticResource DashboardStatLabelStyle}"/>
-                        <TextBlock x:Name="TodaysSalesStatText" Text="{Binding TodaysSalesTotal, StringFormat='Rs. {0:N2}'}"
-                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#16A34A" FontSize="22"/>
+            <Button Style="{StaticResource KpiCardButtonStyle}" Margin="0,0,12,0" Command="{Binding ViewProductsCommand}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="#DBEAFE" Margin="0,0,8,0">
+                            <TextBlock Text="📦" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="ACTIVE PRODUCTS" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                </Border>
+                    <TextBlock Text="{Binding ActiveProductCount}" FontSize="22" FontWeight="Bold" Foreground="#2563EB"/>
+                </StackPanel>
+            </Button>
 
-                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
-                    <StackPanel>
-                        <TextBlock Text="TODAY'S TRANSACTIONS" Style="{StaticResource DashboardStatLabelStyle}"/>
-                        <TextBlock x:Name="TodaysTransactionsStatText" Text="{Binding TodaysTransactionCount}"
-                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#7C3AED"/>
+            <Button Style="{StaticResource KpiCardButtonStyle}" Margin="0,0,12,0" Command="{Binding ViewLowStockCommand}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="#FEE2E2" Margin="0,0,8,0">
+                            <TextBlock Text="⚠️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="LOW STOCK" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                </Border>
+                    <TextBlock Text="{Binding LowStockCount}" FontSize="22" FontWeight="Bold" Foreground="#DC2626"/>
+                </StackPanel>
+            </Button>
 
-                <Border Style="{StaticResource DashboardCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="LOW STOCK" Style="{StaticResource DashboardStatLabelStyle}"/>
-                        <TextBlock x:Name="LowStockStatText" Text="{Binding LowStockCount}"
-                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#DC2626"/>
+            <Border Style="{StaticResource KpiCardStyle}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Border Width="30" Height="30" CornerRadius="8" Background="#EDE9FE" Margin="0,0,8,0">
+                            <TextBlock Text="🏆" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="BEST SELLING PRODUCT" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                </Border>
-            </UniformGrid>
+                    <TextBlock Text="{Binding BestSellingProductName}" FontSize="15" FontWeight="Bold" Foreground="#111827"
+                               TextTrimming="CharacterEllipsis" Visibility="{Binding HasBestSellingProduct, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <TextBlock Text="{Binding BestSellingUnits, StringFormat='{}{0} units sold'}" FontSize="11" Foreground="#6B7280"
+                               Visibility="{Binding HasBestSellingProduct, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <TextBlock Text="No sales yet" FontSize="15" FontWeight="Bold" Foreground="#9CA3AF">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasBestSellingProduct}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
 
-            <!-- Recent Transactions + Low Stock Products -->
-            <Grid>
+        <!-- Charts -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Row 1: Sales Trend (wide) + Sales by Category -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1.6*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Recent Transactions" Style="{StaticResource SectionHeadingStyle}" Margin="0,0,0,14"/>
-
-                        <ItemsControl x:Name="RecentTransactionsList" ItemsSource="{Binding RecentTransactions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding InvoiceNumber}" FontSize="13"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat='Rs. {0:N2}'}"
-                                                   FontSize="13" FontWeight="SemiBold"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <TextBlock Text="No transactions yet." Margin="0,0,0,10">
+                <Border Grid.Column="0" Style="{StaticResource ChartCardStyle}">
+                    <Grid>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="📈 Sales Trend" Style="{StaticResource ChartCardTitleStyle}"/>
+                            <charts:LineChartControl ItemsSource="{Binding SalesTrend}"/>
+                        </DockPanel>
+                        <TextBlock Text="No sales in this period." HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasRecentTransactions}" Value="False">
+                                        <DataTrigger Binding="{Binding HasSalesTrendData}" Value="False">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-
-                        <Button x:Name="ViewTransactionsButton" Content="View All Transactions"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding ViewTransactionsCommand}"
-                                HorizontalAlignment="Left"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Low Stock Products" Style="{StaticResource SectionHeadingStyle}" Margin="0,0,0,14"/>
-
-                        <ItemsControl x:Name="LowStockList" ItemsSource="{Binding LowStockProducts}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding StockQuantity, StringFormat='— {0} units'}"
-                                                   FontSize="13" FontWeight="SemiBold" Foreground="#DC2626"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <TextBlock Text="No products are currently low on stock." Margin="0,0,0,10">
+                <Border Grid.Column="2" Style="{StaticResource ChartCardStyle}">
+                    <Grid>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="📊 Sales by Category" Style="{StaticResource ChartCardTitleStyle}"/>
+                            <charts:BarChartControl ItemsSource="{Binding SalesByCategory}"/>
+                        </DockPanel>
+                        <TextBlock Text="No sales in this period.">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasLowStockProducts}" Value="False">
+                                        <DataTrigger Binding="{Binding HasCategoryData}" Value="False">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-
-                        <Button x:Name="ViewLowStockButton" Content="View Low Stock Products"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding ViewLowStockCommand}"
-                                HorizontalAlignment="Left"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
-        </StackPanel>
-    </ScrollViewer>
+
+            <!-- Row 2: Top Selling Products + Sales Heatmap + Stock vs Sales -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource ChartCardStyle}">
+                    <Grid>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="🏅 Top Selling Products" Style="{StaticResource ChartCardTitleStyle}"/>
+                            <charts:HorizontalBarChartControl ItemsSource="{Binding TopSellingProducts}"/>
+                        </DockPanel>
+                        <TextBlock Text="No sales in this period.">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTopProductsData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource ChartCardStyle}">
+                    <Grid>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="🔥 Sales Heatmap" Style="{StaticResource ChartCardTitleStyle}"/>
+                            <charts:HeatmapControl ItemsSource="{Binding SalesHeatmap}"/>
+                        </DockPanel>
+                        <TextBlock Text="No sales in this period.">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasHeatmapData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="4" Style="{StaticResource ChartCardStyle}">
+                    <Grid>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="📍 Product Stock vs Sales" Style="{StaticResource ChartCardTitleStyle}"/>
+                            <charts:ScatterChartControl ItemsSource="{Binding StockVsSales}"/>
+                        </DockPanel>
+                        <TextBlock Text="No active products to plot.">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasStockVsSalesData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Loading overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="3" Background="#CCFFFFFF">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="Loading dashboard..." FontSize="14" Foreground="#374151"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Error banner -->
+        <Border Grid.Row="0" Grid.RowSpan="3" Background="#FEE2E2" CornerRadius="8"
+                Padding="16" MaxHeight="60" VerticalAlignment="Top">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasError}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" FontSize="13" TextWrapping="Wrap"/>
+        </Border>
+    </Grid>
 </UserControl>

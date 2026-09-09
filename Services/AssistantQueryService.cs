@@ -334,7 +334,7 @@ public class AssistantQueryService
 
     private AssistantResponse BuildTransactionQueryResponse(AssistantQuery query)
     {
-        var sales = _salesService.SearchSales(string.Empty, query.StartDate, query.EndDate);
+        var sales = _salesService.SearchSales(query.StartDate, query.EndDate);
 
         // The amount filter is reported here in the chat, but is not (yet) mirrored as a
         // live filter on the Transaction History screen itself — see the documentation's

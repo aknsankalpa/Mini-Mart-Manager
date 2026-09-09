@@ -3,13 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:helpers="clr-namespace:RetailFlow.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000">
-
-    <UserControl.Resources>
-        <helpers:BoolToActiveStatusConverter x:Key="BoolToActiveStatusConverter"/>
-    </UserControl.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -81,7 +76,38 @@
                         <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat='Rs. {0:N2}'}" Width="100"/>
                         <DataGridTextColumn Header="Stock" Binding="{Binding StockQuantity}" Width="60"/>
                         <DataGridTextColumn Header="Reorder" Binding="{Binding ReorderLevel}" Width="70"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding IsActive, Converter={StaticResource BoolToActiveStatusConverter}}" Width="70"/>
+                        <DataGridTemplateColumn Header="Status" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Padding="10,3" CornerRadius="12" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border" BasedOn="{StaticResource StatusBadgeBaseStyle}">
+                                                <Setter Property="Background" Value="#DCFCE7"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                        <Setter Property="Background" Value="#FEE2E2"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock>
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource StatusBadgeTextStyle}">
+                                                    <Setter Property="Foreground" Value="#16A34A"/>
+                                                    <Setter Property="Text" Value="Active"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Foreground" Value="#DC2626"/>
+                                                            <Setter Property="Text" Value="Inactive"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
@@ -114,7 +140,10 @@
         <!-- RIGHT: add / edit form -->
         <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
             <StackPanel>
-                <TextBlock Text="{Binding FormTitle}" Style="{StaticResource SectionHeadingStyle}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <TextBlock Text="📦" FontSize="16" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding FormTitle}" Style="{StaticResource SectionHeadingStyle}" Margin="0"/>
+                </StackPanel>
 
                 <TextBlock Text="Product Code" Style="{StaticResource FormLabelStyle}"/>
                 <TextBox x:Name="ProductCodeTextBox" Style="{StaticResource FormTextBoxStyle}"
