@@ -187,6 +187,7 @@ public class SalesViewModel : ViewModelBase
 
         Cart.Clear();
         DiscountText = "0";
+        LoadAvailableProducts(); // refresh so the "In Stock" column reflects the new, lower quantities
         RecalculateTotals();
         CommandManager.InvalidateRequerySuggested();
         StatusMessage = string.Empty;
