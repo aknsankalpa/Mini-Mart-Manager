@@ -48,41 +48,60 @@
                             SelectedDate="{Binding ToDate}"/>
             </Grid>
 
-            <DataGrid x:Name="TransactionsDataGrid" Grid.Row="1"
-                      ItemsSource="{Binding Transactions}"
-                      SelectedItem="{Binding SelectedTransaction}"
-                      ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      CanUserReorderColumns="False"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#F0F1F3"
-                      HeadersVisibility="Column"
-                      BorderThickness="1"
-                      BorderBrush="#E5E7EB"
-                      Background="White"
-                      RowHeight="36"
-                      FontSize="13"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Invoice Number" Binding="{Binding InvoiceNumber}" Width="150"/>
-                    <DataGridTextColumn Header="Date" Binding="{Binding SaleDate, StringFormat='MMM dd, yyyy h:mm tt'}" Width="*"/>
-                    <DataGridTextColumn Header="Subtotal" Binding="{Binding SubTotal, StringFormat='Rs. {0:N2}'}" Width="100"/>
-                    <DataGridTextColumn Header="Discount" Binding="{Binding Discount, StringFormat='Rs. {0:N2}'}" Width="100"/>
-                    <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat='Rs. {0:N2}'}" Width="100"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid Grid.Row="1">
+                <DataGrid x:Name="TransactionsDataGrid"
+                          ItemsSource="{Binding Transactions}"
+                          SelectedItem="{Binding SelectedTransaction}"
+                          ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="#F0F1F3"
+                          HeadersVisibility="Column"
+                          BorderThickness="1"
+                          BorderBrush="#E5E7EB"
+                          Background="White"
+                          AlternatingRowBackground="#FAFBFC"
+                          RowHeight="36"
+                          FontSize="13"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Invoice Number" Binding="{Binding InvoiceNumber}" Width="150"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding SaleDate, StringFormat='MMM dd, yyyy h:mm tt'}" Width="*"/>
+                        <DataGridTextColumn Header="Subtotal" Binding="{Binding SubTotal, StringFormat='Rs. {0:N2}'}" Width="100"/>
+                        <DataGridTextColumn Header="Discount" Binding="{Binding Discount, StringFormat='Rs. {0:N2}'}" Width="100"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat='Rs. {0:N2}'}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="No transactions found. Try a different search or date range."
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           MaxWidth="280" TextAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasTransactions}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
         </Grid>
 
         <!-- RIGHT: receipt-style detail of the selected transaction -->
-        <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="20">
+        <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
             <Grid>
                 <TextBlock Text="Select a transaction to view its details."
-                           Foreground="#9CA3AF" FontSize="13" TextWrapping="Wrap"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                           Style="{StaticResource EmptyStateTextStyle}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           MaxWidth="240" TextAlignment="Center"/>
 
                 <Grid Background="White"
                       Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">

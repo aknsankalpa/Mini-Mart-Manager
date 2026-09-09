@@ -25,33 +25,50 @@
                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,0,12"/>
 
-            <DataGrid x:Name="AvailableProductsDataGrid" Grid.Row="1"
-                      ItemsSource="{Binding AvailableProducts}"
-                      SelectedItem="{Binding SelectedProduct}"
-                      ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      CanUserReorderColumns="False"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#F0F1F3"
-                      HeadersVisibility="Column"
-                      BorderThickness="1"
-                      BorderBrush="#E5E7EB"
-                      Background="White"
-                      RowHeight="36"
-                      FontSize="13"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow"
-                      Margin="0,0,0,12">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Code" Binding="{Binding ProductCode}" Width="80"/>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat='Rs. {0:N2}'}" Width="100"/>
-                    <DataGridTextColumn Header="In Stock" Binding="{Binding StockQuantity}" Width="80"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <DataGrid x:Name="AvailableProductsDataGrid"
+                          ItemsSource="{Binding AvailableProducts}"
+                          SelectedItem="{Binding SelectedProduct}"
+                          ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="#F0F1F3"
+                          HeadersVisibility="Column"
+                          BorderThickness="1"
+                          BorderBrush="#E5E7EB"
+                          Background="White"
+                          AlternatingRowBackground="#FAFBFC"
+                          RowHeight="36"
+                          FontSize="13"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding ProductCode}" Width="80"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat='Rs. {0:N2}'}" Width="100"/>
+                        <DataGridTextColumn Header="In Stock" Binding="{Binding StockQuantity}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="No products found. Try a different search term."
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           MaxWidth="240" TextAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasAvailableProducts}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
 
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
@@ -76,7 +93,7 @@
         </Grid>
 
         <!-- RIGHT: current sale (cart + checkout) -->
-        <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="20">
+        <Border Grid.Column="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -84,7 +101,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Current Sale" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <TextBlock Grid.Row="0" Text="Current Sale" Style="{StaticResource SectionHeadingStyle}"/>
 
                 <DataGrid x:Name="CartDataGrid" Grid.Row="1"
                           ItemsSource="{Binding Cart}"
@@ -99,8 +116,9 @@
                           HeadersVisibility="Column"
                           BorderThickness="1"
                           BorderBrush="#E5E7EB"
-                          RowHeight="34"
-                          FontSize="12"
+                          AlternatingRowBackground="#FAFBFC"
+                          RowHeight="36"
+                          FontSize="13"
                           Margin="0,0,0,16">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="*"/>

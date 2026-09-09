@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RetailFlow.Data;
+using RetailFlow.Helpers;
 using RetailFlow.Models;
 using RetailFlow.ViewModels;
 
@@ -30,6 +31,14 @@ public class SalesService
         var products = new Dictionary<int, Product>();
         foreach (var item in cartItems)
         {
+            // The ViewModel already refuses to add a non-positive quantity to the cart,
+            // but this is the persistence boundary — it re-checks independently rather
+            // than trusting that every caller went through that UI path.
+            if (!ValidationHelper.IsPositive(item.Quantity))
+            {
+                return (false, $"'{item.ProductName}' has an invalid quantity.", string.Empty);
+            }
+
             var product = context.Products.Find(item.ProductId);
 
             if (product is null || !product.IsActive)
@@ -37,7 +46,7 @@ public class SalesService
                 return (false, $"'{item.ProductName}' is no longer available. Please remove it from the cart.", string.Empty);
             }
 
-            if (item.Quantity > product.StockQuantity)
+            if (!ValidationHelper.IsSufficientStock(item.Quantity, product.StockQuantity))
             {
                 return (false, $"Insufficient Stock\n\nOnly {product.StockQuantity} units of {product.Name} are currently available.", string.Empty);
             }
@@ -45,7 +54,7 @@ public class SalesService
             products[item.ProductId] = product;
         }
 
-        var subtotal = cartItems.Sum(item => item.UnitPrice * item.Quantity);
+        var subtotal = SaleCalculator.CalculateSubtotal(cartItems);
 
         if (discount < 0 || discount > subtotal)
         {
@@ -58,7 +67,7 @@ public class SalesService
             SaleDate = DateTime.Now,
             SubTotal = subtotal,
             Discount = discount,
-            Total = subtotal - discount
+            Total = SaleCalculator.CalculateTotal(subtotal, discount)
         };
 
         foreach (var item in cartItems)
@@ -68,7 +77,7 @@ public class SalesService
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                LineTotal = item.UnitPrice * item.Quantity
+                LineTotal = item.LineTotal
             });
 
             // Reduce stock on the same tracked Product instance validated above.
@@ -89,9 +98,10 @@ public class SalesService
             context.SaveChanges();
             transaction.Commit();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             transaction.Rollback();
+            Logger.LogError("SalesService.CompleteSale", ex);
             return (false, "The sale could not be saved due to an unexpected error. Stock has not been changed.", string.Empty);
         }
 
@@ -141,6 +151,20 @@ public class SalesService
             .Include(s => s.SaleItems)
             .ThenInclude(si => si.Product)
             .FirstOrDefault(s => s.Id == saleId);
+    }
+
+    /// <summary>
+    /// The most recently completed sales, newest first. Used by the Dashboard's
+    /// "Recent Transactions" panel.
+    /// </summary>
+    public List<Sale> GetRecentSales(int count)
+    {
+        using var context = new AppDbContext();
+
+        return context.Sales
+            .OrderByDescending(s => s.SaleDate)
+            .Take(count)
+            .ToList();
     }
 
     /// <summary>

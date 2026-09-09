@@ -4,7 +4,134 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <TextBlock Text="Dashboard content will be added in Phase 11 (product counts, today's sales, low-stock alerts)."
-               FontSize="14" Foreground="#6B7280" TextWrapping="Wrap"/>
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+
+            <!-- Headline stat tiles -->
+            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,20">
+                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="PRODUCTS" Style="{StaticResource DashboardStatLabelStyle}"/>
+                        <TextBlock x:Name="ProductsStatText" Text="{Binding ActiveProductCount}"
+                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#2563EB"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="TODAY'S SALES" Style="{StaticResource DashboardStatLabelStyle}"/>
+                        <TextBlock x:Name="TodaysSalesStatText" Text="{Binding TodaysSalesTotal, StringFormat='Rs. {0:N2}'}"
+                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#16A34A" FontSize="22"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="TODAY'S TRANSACTIONS" Style="{StaticResource DashboardStatLabelStyle}"/>
+                        <TextBlock x:Name="TodaysTransactionsStatText" Text="{Binding TodaysTransactionCount}"
+                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#7C3AED"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="LOW STOCK" Style="{StaticResource DashboardStatLabelStyle}"/>
+                        <TextBlock x:Name="LowStockStatText" Text="{Binding LowStockCount}"
+                                   Style="{StaticResource DashboardStatValueStyle}" Foreground="#DC2626"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Recent Transactions + Low Stock Products -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Recent Transactions" Style="{StaticResource SectionHeadingStyle}" Margin="0,0,0,14"/>
+
+                        <ItemsControl x:Name="RecentTransactionsList" ItemsSource="{Binding RecentTransactions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding InvoiceNumber}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat='Rs. {0:N2}'}"
+                                                   FontSize="13" FontWeight="SemiBold"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="No transactions yet." Margin="0,0,0,10">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasRecentTransactions}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Button x:Name="ViewTransactionsButton" Content="View All Transactions"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding ViewTransactionsCommand}"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Low Stock Products" Style="{StaticResource SectionHeadingStyle}" Margin="0,0,0,14"/>
+
+                        <ItemsControl x:Name="LowStockList" ItemsSource="{Binding LowStockProducts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding StockQuantity, StringFormat='— {0} units'}"
+                                                   FontSize="13" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="No products are currently low on stock." Margin="0,0,0,10">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasLowStockProducts}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <Button x:Name="ViewLowStockButton" Content="View Low Stock Products"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding ViewLowStockCommand}"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
