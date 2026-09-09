@@ -21,6 +21,8 @@ public class SalesViewModel : ViewModelBase
     public ObservableCollection<Product> AvailableProducts { get; } = new();
     public ObservableCollection<CartItem> Cart { get; } = new();
 
+    public bool HasAvailableProducts => AvailableProducts.Count > 0;
+
     public ICommand AddToCartCommand { get; }
     public ICommand RemoveFromCartCommand { get; }
     public ICommand CompleteSaleCommand { get; }
@@ -74,15 +76,35 @@ public class SalesViewModel : ViewModelBase
         LoadAvailableProducts();
     }
 
+    /// <summary>
+    /// Re-runs the current product search. MainWindow calls this every time it navigates
+    /// here, so the "In Stock" column reflects any change made from another screen.
+    /// </summary>
+    public void Refresh() => LoadAvailableProducts();
+
     private void LoadAvailableProducts()
     {
-        var results = _productService.Search(SearchText, includeInactive: false);
-
-        AvailableProducts.Clear();
-        foreach (var product in results)
+        // See ProductViewModel.LoadProducts for why this can't be allowed to throw: every
+        // screen is constructed eagerly at startup, so an uncaught exception here would
+        // otherwise take the whole application down rather than just this screen.
+        try
         {
-            AvailableProducts.Add(product);
+            var results = _productService.Search(SearchText, includeInactive: false);
+
+            AvailableProducts.Clear();
+            foreach (var product in results)
+            {
+                AvailableProducts.Add(product);
+            }
         }
+        catch (Exception ex)
+        {
+            Logger.LogError("SalesViewModel.LoadAvailableProducts", ex);
+            AvailableProducts.Clear();
+            ShowError("Products could not be loaded due to an unexpected error.");
+        }
+
+        OnPropertyChanged(nameof(HasAvailableProducts));
     }
 
     private void AddToCart()
@@ -93,7 +115,7 @@ public class SalesViewModel : ViewModelBase
             return;
         }
 
-        if (!int.TryParse(QuantityText, out var quantity) || quantity <= 0)
+        if (!int.TryParse(QuantityText, out var quantity) || !ValidationHelper.IsPositive(quantity))
         {
             ShowError("Quantity must be a whole number greater than 0.");
             return;
@@ -104,7 +126,7 @@ public class SalesViewModel : ViewModelBase
         var existingLine = Cart.FirstOrDefault(item => item.ProductId == SelectedProduct.Id);
         var totalRequested = quantity + (existingLine?.Quantity ?? 0);
 
-        if (totalRequested > SelectedProduct.StockQuantity)
+        if (!ValidationHelper.IsSufficientStock(totalRequested, SelectedProduct.StockQuantity))
         {
             ShowError($"Insufficient Stock\n\nOnly {SelectedProduct.StockQuantity} units of {SelectedProduct.Name} are currently available.");
             return;
@@ -196,7 +218,7 @@ public class SalesViewModel : ViewModelBase
 
     private void RecalculateTotals()
     {
-        Subtotal = Cart.Sum(item => item.LineTotal);
+        Subtotal = SaleCalculator.CalculateSubtotal(Cart);
 
         decimal.TryParse(DiscountText, out var discount);
         if (discount < 0)
@@ -204,7 +226,7 @@ public class SalesViewModel : ViewModelBase
             discount = 0;
         }
 
-        Total = Subtotal - discount;
+        Total = SaleCalculator.CalculateTotal(Subtotal, discount);
     }
 
     private void ShowError(string message)

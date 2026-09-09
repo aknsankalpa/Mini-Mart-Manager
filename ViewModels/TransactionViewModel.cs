@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using RetailFlow.Helpers;
 using RetailFlow.Models;
 using RetailFlow.Services;
 
@@ -14,6 +15,8 @@ public class TransactionViewModel : ViewModelBase
 
     public ObservableCollection<Sale> Transactions { get; } = new();
     public ObservableCollection<SaleItem> SelectedTransactionItems { get; } = new();
+
+    public bool HasTransactions => Transactions.Count > 0;
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -57,15 +60,37 @@ public class TransactionViewModel : ViewModelBase
         LoadTransactions();
     }
 
+    /// <summary>
+    /// Re-runs the current search/date filter against the database. Since this screen is
+    /// created once and reused, MainWindow calls this every time it navigates here, so a
+    /// sale completed elsewhere always shows up — property setters like SearchText only
+    /// reload when the value actually changes, which navigation alone doesn't guarantee.
+    /// </summary>
+    public void Refresh() => LoadTransactions();
+
     private void LoadTransactions()
     {
-        var results = _salesService.SearchSales(SearchText, FromDate, ToDate);
-
-        Transactions.Clear();
-        foreach (var sale in results)
+        // Every screen is constructed eagerly at startup (see MainWindow.xaml.cs), so an
+        // uncaught exception here would take the whole application down rather than just
+        // leave this one screen showing nothing — see ProductViewModel.LoadProducts for
+        // the same reasoning.
+        try
         {
-            Transactions.Add(sale);
+            var results = _salesService.SearchSales(SearchText, FromDate, ToDate);
+
+            Transactions.Clear();
+            foreach (var sale in results)
+            {
+                Transactions.Add(sale);
+            }
         }
+        catch (Exception ex)
+        {
+            Logger.LogError("TransactionViewModel.LoadTransactions", ex);
+            Transactions.Clear();
+        }
+
+        OnPropertyChanged(nameof(HasTransactions));
     }
 
     private void LoadDetail()
@@ -77,15 +102,22 @@ public class TransactionViewModel : ViewModelBase
             return;
         }
 
-        var fullSale = _salesService.GetSaleWithItems(SelectedTransaction.Id);
-        if (fullSale is null)
+        try
         {
-            return;
-        }
+            var fullSale = _salesService.GetSaleWithItems(SelectedTransaction.Id);
+            if (fullSale is null)
+            {
+                return;
+            }
 
-        foreach (var item in fullSale.SaleItems)
+            foreach (var item in fullSale.SaleItems)
+            {
+                SelectedTransactionItems.Add(item);
+            }
+        }
+        catch (Exception ex)
         {
-            SelectedTransactionItems.Add(item);
+            Logger.LogError("TransactionViewModel.LoadDetail", ex);
         }
     }
 }

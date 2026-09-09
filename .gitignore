@@ -12,6 +12,9 @@ obj/
 *.db-shm
 *.db-wal
 
+# Error log (see Helpers/Logger.cs)
+retailflow-error.log
+
 # OS files
 Thumbs.db
 .DS_Store

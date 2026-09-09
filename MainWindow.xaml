@@ -38,6 +38,9 @@
                     <Button x:Name="BtnTransactions" Content="Transactions"
                             Style="{StaticResource NavButtonStyle}"
                             Click="BtnTransactions_Click"/>
+                    <Button x:Name="BtnAssistant" Content="🤖 MiniMart Assistant"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="BtnAssistant_Click"/>
                 </StackPanel>
             </DockPanel>
         </Border>

@@ -29,14 +29,37 @@ public class ProductService
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var term = searchTerm.Trim();
+            // EF Core's SQLite provider translates string.Contains() using instr(), which
+            // is case-sensitive — unlike SQL LIKE. Lowering both sides explicitly keeps
+            // the search "rice" finds "Rice 5kg" regardless of how the user typed it.
+            var term = searchTerm.Trim().ToLower();
             query = query.Where(p =>
-                p.ProductCode.Contains(term) ||
-                p.Name.Contains(term) ||
-                p.Category.Contains(term));
+                p.ProductCode.ToLower().Contains(term) ||
+                p.Name.ToLower().Contains(term) ||
+                p.Category.ToLower().Contains(term));
         }
 
         return query.OrderBy(p => p.Name).ToList();
+    }
+
+    /// <summary>
+    /// Active products whose stock has dropped to or below their reorder level. Used by
+    /// the Dashboard and the MiniMart Assistant.
+    ///
+    /// The condition below is the same "low stock" rule as ValidationHelper.IsLowStock,
+    /// but can't actually call it: this Where() is translated into SQL by EF Core, which
+    /// requires an expression tree it can convert to a query, not an arbitrary C# method
+    /// call. ProductViewModel's in-memory "Low stock only" filter runs against an
+    /// already-loaded List&lt;Product&gt; instead, so it calls the shared helper directly.
+    /// </summary>
+    public List<Product> GetLowStockProducts()
+    {
+        using var context = new AppDbContext();
+
+        return context.Products
+            .Where(p => p.IsActive && p.StockQuantity <= p.ReorderLevel)
+            .OrderBy(p => p.Name)
+            .ToList();
     }
 
     public (bool Success, string ErrorMessage) AddProduct(Product product)
@@ -70,6 +93,13 @@ public class ProductService
             // Covers the rare race where two saves happen at almost the same moment
             // and both pass the check above; the database's unique index is the final say.
             return (false, "Product code already exists.");
+        }
+        catch (Exception ex)
+        {
+            // Anything else (a locked database file, a full disk, ...) — the user gets a
+            // plain message, never the raw exception; the details go to the log instead.
+            Logger.LogError("ProductService.AddProduct", ex);
+            return (false, "The product could not be saved due to an unexpected error. Please try again.");
         }
     }
 
@@ -111,6 +141,11 @@ public class ProductService
         {
             return (false, "Product code already exists.");
         }
+        catch (Exception ex)
+        {
+            Logger.LogError("ProductService.UpdateProduct", ex);
+            return (false, "The product could not be saved due to an unexpected error. Please try again.");
+        }
     }
 
     /// <summary>
@@ -129,9 +164,17 @@ public class ProductService
 
         product.IsActive = isActive;
         product.UpdatedAt = DateTime.Now;
-        context.SaveChanges();
 
-        return (true, string.Empty);
+        try
+        {
+            context.SaveChanges();
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("ProductService.SetActiveStatus", ex);
+            return (false, "This change could not be saved due to an unexpected error. Please try again.");
+        }
     }
 
     private static (bool IsValid, string ErrorMessage) Validate(Product product)

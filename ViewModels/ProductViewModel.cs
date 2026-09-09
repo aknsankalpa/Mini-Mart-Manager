@@ -18,6 +18,8 @@ public class ProductViewModel : ViewModelBase
 
     public ObservableCollection<Product> Products { get; } = new();
 
+    public bool HasProducts => Products.Count > 0;
+
     private string _searchText = string.Empty;
     public string SearchText
     {
@@ -30,6 +32,13 @@ public class ProductViewModel : ViewModelBase
     {
         get => _showInactive;
         set { if (SetField(ref _showInactive, value)) LoadProducts(); }
+    }
+
+    private bool _lowStockOnly;
+    public bool LowStockOnly
+    {
+        get => _lowStockOnly;
+        set { if (SetField(ref _lowStockOnly, value)) LoadProducts(); }
     }
 
     private Product? _selectedProduct;
@@ -106,15 +115,45 @@ public class ProductViewModel : ViewModelBase
         LoadProducts();
     }
 
+    /// <summary>
+    /// Re-runs the current search/filter against the database. Since this screen is
+    /// created once and reused, MainWindow calls this every time it navigates here, so
+    /// stock changed by a sale elsewhere is reflected immediately rather than only after
+    /// the search text or a checkbox happens to change.
+    /// </summary>
+    public void Refresh() => LoadProducts();
+
     private void LoadProducts()
     {
-        var results = _productService.Search(SearchText, ShowInactive);
-
-        Products.Clear();
-        foreach (var product in results)
+        // A screen's own data load must not be allowed to throw: every View/ViewModel in
+        // this app is constructed once, eagerly, when the main window starts up (see
+        // MainWindow.xaml.cs), so an uncaught exception here would take down the whole
+        // application before it ever shows a window — not just leave this one screen
+        // showing no data. Catching here keeps a database problem contained to "this
+        // screen has nothing to show right now" instead.
+        try
         {
-            Products.Add(product);
+            var results = _productService.Search(SearchText, ShowInactive);
+
+            if (LowStockOnly)
+            {
+                results = results.Where(p => ValidationHelper.IsLowStock(p.StockQuantity, p.ReorderLevel)).ToList();
+            }
+
+            Products.Clear();
+            foreach (var product in results)
+            {
+                Products.Add(product);
+            }
         }
+        catch (Exception ex)
+        {
+            Logger.LogError("ProductViewModel.LoadProducts", ex);
+            Products.Clear();
+            ShowError("Products could not be loaded due to an unexpected error.");
+        }
+
+        OnPropertyChanged(nameof(HasProducts));
     }
 
     private void LoadIntoForm(Product product)
