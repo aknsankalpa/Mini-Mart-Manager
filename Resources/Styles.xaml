@@ -4,8 +4,8 @@
     <!-- Default (inactive) style for the sidebar navigation buttons -->
     <Style x:Key="NavButtonStyle" TargetType="Button">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="Padding" Value="20,12"/>
-        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="Padding" Value="16,11"/>
+        <Setter Property="Margin" Value="12,2"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="#D1D5DB"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -14,7 +14,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                         <ContentPresenter VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
@@ -28,7 +28,9 @@
         </Style.Triggers>
     </Style>
 
-    <!-- Highlighted style applied to whichever nav button is currently selected -->
+    <!-- Highlighted style applied to whichever nav button is currently selected: a
+         rounded pill rather than a full-width bar, matched to the card corner radius
+         used throughout the rest of the app. -->
     <Style x:Key="NavButtonActiveStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
         <Setter Property="Background" Value="#2563EB"/>
         <Setter Property="Foreground" Value="White"/>
@@ -159,6 +161,86 @@
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="Foreground" Value="#9CA3AF"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- Small rounded, colored square used as an icon container — on the Dashboard's
+         stat tiles and as a section-header accent. Color is set per instance via the
+         Background property; these four are the palette used throughout. -->
+    <Style x:Key="IconTileStyle" TargetType="Border">
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+    <Style x:Key="IconTileTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Small rounded pill used to show a short status word (Active / Inactive,
+         Completed, Low). Base style sets the shape; the two variants below set color. -->
+    <Style x:Key="StatusBadgeBaseStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="10,3"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+    <Style x:Key="StatusBadgeTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- Positive/neutral state: Active, Completed -->
+    <Style x:Key="StatusBadgeSuccessStyle" TargetType="Border" BasedOn="{StaticResource StatusBadgeBaseStyle}">
+        <Setter Property="Background" Value="#DCFCE7"/>
+    </Style>
+    <Style x:Key="StatusBadgeSuccessTextStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusBadgeTextStyle}">
+        <Setter Property="Foreground" Value="#16A34A"/>
+    </Style>
+
+    <!-- Needs-attention state: Inactive, Low stock -->
+    <Style x:Key="StatusBadgeWarningStyle" TargetType="Border" BasedOn="{StaticResource StatusBadgeBaseStyle}">
+        <Setter Property="Background" Value="#FEE2E2"/>
+    </Style>
+    <Style x:Key="StatusBadgeWarningTextStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusBadgeTextStyle}">
+        <Setter Property="Foreground" Value="#DC2626"/>
+    </Style>
+
+    <!-- Compact white card used by the Power BI-style Dashboard's chart panels — same look
+         as DashboardCardStyle but with tighter padding, since five of these plus the KPI
+         row and filter bar all need to fit one screen without scrolling. -->
+    <Style x:Key="ChartCardStyle" TargetType="Border" BasedOn="{StaticResource DashboardCardStyle}">
+        <Setter Property="Padding" Value="14,10"/>
+    </Style>
+
+    <!-- Small heading above a chart, deliberately smaller than SectionHeadingStyle to save
+         vertical space in the no-scroll Dashboard layout. -->
+    <Style x:Key="ChartCardTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#111827"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <!-- The Dashboard's compact KPI tiles — tighter than DashboardCardStyle so four of them
+         plus five charts and the filter bar all fit one screen without scrolling. -->
+    <Style x:Key="KpiCardStyle" TargetType="Border" BasedOn="{StaticResource DashboardCardStyle}">
+        <Setter Property="Padding" Value="16,12"/>
+    </Style>
+
+    <!-- Same look as KpiCardStyle, but as a clickable Button (for the KPI cards that
+         drill down into another screen) rather than a plain Border. -->
+    <Style x:Key="KpiCardButtonStyle" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Style="{StaticResource KpiCardStyle}">
+                        <ContentPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

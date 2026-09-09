@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using RetailFlow.Helpers;
 using RetailFlow.Models;
 using RetailFlow.Services;
@@ -6,8 +7,9 @@ using RetailFlow.Services;
 namespace RetailFlow.ViewModels;
 
 /// <summary>
-/// Drives the Transaction History screen: a searchable list of completed sales on the
-/// left, and a receipt-style breakdown of whichever one is selected on the right.
+/// Drives the Transaction History screen: a date-filterable list of completed sales on
+/// the left (newest first), and a receipt-style breakdown of whichever one is selected
+/// on the right.
 /// </summary>
 public class TransactionViewModel : ViewModelBase
 {
@@ -17,13 +19,6 @@ public class TransactionViewModel : ViewModelBase
     public ObservableCollection<SaleItem> SelectedTransactionItems { get; } = new();
 
     public bool HasTransactions => Transactions.Count > 0;
-
-    private string _searchText = string.Empty;
-    public string SearchText
-    {
-        get => _searchText;
-        set { if (SetField(ref _searchText, value)) LoadTransactions(); }
-    }
 
     private DateTime? _fromDate;
     public DateTime? FromDate
@@ -55,18 +50,36 @@ public class TransactionViewModel : ViewModelBase
 
     public bool HasSelection => SelectedTransaction is not null;
 
+    public ICommand ResetCommand { get; }
+
     public TransactionViewModel()
     {
+        ResetCommand = new RelayCommand(_ => Reset());
+
         LoadTransactions();
     }
 
     /// <summary>
-    /// Re-runs the current search/date filter against the database. Since this screen is
+    /// Re-runs the current date filter against the database. Since this screen is
     /// created once and reused, MainWindow calls this every time it navigates here, so a
-    /// sale completed elsewhere always shows up — property setters like SearchText only
+    /// sale completed elsewhere always shows up — property setters like FromDate only
     /// reload when the value actually changes, which navigation alone doesn't guarantee.
     /// </summary>
     public void Refresh() => LoadTransactions();
+
+    /// <summary>
+    /// Clears the date filter back to the default view: every transaction, newest first.
+    /// Sets both backing fields directly (rather than through the FromDate/ToDate
+    /// setters) so clearing both only reloads once, not twice.
+    /// </summary>
+    private void Reset()
+    {
+        _fromDate = null;
+        _toDate = null;
+        OnPropertyChanged(nameof(FromDate));
+        OnPropertyChanged(nameof(ToDate));
+        LoadTransactions();
+    }
 
     private void LoadTransactions()
     {
@@ -76,7 +89,7 @@ public class TransactionViewModel : ViewModelBase
         // the same reasoning.
         try
         {
-            var results = _salesService.SearchSales(SearchText, FromDate, ToDate);
+            var results = _salesService.SearchSales(FromDate, ToDate);
 
             Transactions.Clear();
             foreach (var sale in results)

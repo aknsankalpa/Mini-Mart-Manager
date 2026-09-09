@@ -109,20 +109,14 @@ public class SalesService
     }
 
     /// <summary>
-    /// Returns completed sales, most recent first, optionally filtered by invoice number
-    /// (partial match) and/or a date range. Used by the Transaction History screen.
+    /// Returns completed sales, most recent first, optionally filtered by a date range.
+    /// Used by the Transaction History screen.
     /// </summary>
-    public List<Sale> SearchSales(string invoiceSearch, DateTime? fromDate, DateTime? toDate)
+    public List<Sale> SearchSales(DateTime? fromDate, DateTime? toDate)
     {
         using var context = new AppDbContext();
 
         var query = context.Sales.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(invoiceSearch))
-        {
-            var term = invoiceSearch.Trim();
-            query = query.Where(s => s.InvoiceNumber.Contains(term));
-        }
 
         if (fromDate.HasValue)
         {

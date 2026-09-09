@@ -103,16 +103,16 @@
             <!-- Input area -->
             <StackPanel Grid.Row="2" Margin="20,0,20,20">
                 <WrapPanel Margin="0,0,0,10">
-                    <Button Content="Today's Sales" Style="{StaticResource SecondaryButtonStyle}"
+                    <Button Content="💰 Today's Sales" Style="{StaticResource SecondaryButtonStyle}"
                             Margin="0,0,8,0" Command="{Binding QuickActionCommand}"
                             CommandParameter="how much did we sell today"/>
-                    <Button Content="Low Stock" Style="{StaticResource SecondaryButtonStyle}"
+                    <Button Content="⚠️ Low Stock" Style="{StaticResource SecondaryButtonStyle}"
                             Margin="0,0,8,0" Command="{Binding QuickActionCommand}"
                             CommandParameter="show low stock products"/>
-                    <Button Content="Find Product" Style="{StaticResource SecondaryButtonStyle}"
+                    <Button Content="🔍 Find Product" Style="{StaticResource SecondaryButtonStyle}"
                             Margin="0,0,8,0" Command="{Binding QuickActionCommand}"
                             CommandParameter="find "/>
-                    <Button Content="Transactions" Style="{StaticResource SecondaryButtonStyle}"
+                    <Button Content="🧾 Transactions" Style="{StaticResource SecondaryButtonStyle}"
                             Command="{Binding QuickActionCommand}"
                             CommandParameter="show transactions"/>
                 </WrapPanel>

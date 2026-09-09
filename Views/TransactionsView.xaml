@@ -25,27 +25,26 @@
 
             <Grid Grid.Row="0" Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="TransactionSearchTextBox" Grid.Column="0"
-                         Style="{StaticResource FormTextBoxStyle}"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="0,0,12,0"/>
-
-                <TextBlock Grid.Column="1" Text="From" VerticalAlignment="Center"
+                <TextBlock Grid.Column="0" Text="From" VerticalAlignment="Center"
                            FontSize="13" Foreground="#374151" Margin="0,0,8,0"/>
-                <DatePicker x:Name="FromDatePicker" Grid.Column="2"
-                            SelectedDate="{Binding FromDate}" Margin="0,0,12,0"/>
+                <DatePicker x:Name="FromDatePicker" Grid.Column="1"
+                            SelectedDate="{Binding FromDate}" Margin="0,0,16,0"/>
 
-                <TextBlock Grid.Column="3" Text="To" VerticalAlignment="Center"
+                <TextBlock Grid.Column="2" Text="To" VerticalAlignment="Center"
                            FontSize="13" Foreground="#374151" Margin="0,0,8,0"/>
-                <DatePicker x:Name="ToDatePicker" Grid.Column="4"
-                            SelectedDate="{Binding ToDate}"/>
+                <DatePicker x:Name="ToDatePicker" Grid.Column="3"
+                            SelectedDate="{Binding ToDate}" Margin="0,0,16,0"/>
+
+                <Button x:Name="ResetFilterButton" Grid.Column="4" Content="Reset"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding ResetCommand}"/>
             </Grid>
 
             <Grid Grid.Row="1">
@@ -72,13 +71,22 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Invoice Number" Binding="{Binding InvoiceNumber}" Width="150"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding SaleDate, StringFormat='MMM dd, yyyy h:mm tt'}" Width="*"/>
+                        <DataGridTemplateColumn Header="Status" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource StatusBadgeSuccessStyle}" VerticalAlignment="Center">
+                                        <TextBlock Text="Completed" Style="{StaticResource StatusBadgeSuccessTextStyle}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Subtotal" Binding="{Binding SubTotal, StringFormat='Rs. {0:N2}'}" Width="100"/>
                         <DataGridTextColumn Header="Discount" Binding="{Binding Discount, StringFormat='Rs. {0:N2}'}" Width="100"/>
                         <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat='Rs. {0:N2}'}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <TextBlock Text="No transactions found. Try a different search or date range."
+                <TextBlock Text="No transactions found for this date range."
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            MaxWidth="280" TextAlignment="Center">
                     <TextBlock.Style>
@@ -112,8 +120,11 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                        <TextBlock Text="{Binding SelectedTransaction.InvoiceNumber, StringFormat='Invoice #{0}'}"
-                                   FontSize="16" FontWeight="SemiBold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧾" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding SelectedTransaction.InvoiceNumber, StringFormat='Invoice #{0}'}"
+                                       FontSize="16" FontWeight="SemiBold"/>
+                        </StackPanel>
                         <TextBlock Text="{Binding SelectedTransaction.SaleDate, StringFormat='MMMM dd, yyyy h:mm tt'}"
                                    FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
                     </StackPanel>
