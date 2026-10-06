@@ -9,7 +9,7 @@ namespace RetailFlow.Views.Charts;
 /// <summary>Hand-drawn vertical bar chart used for the Dashboard's Sales by Category visualization.</summary>
 public partial class BarChartControl : ChartControlBase
 {
-    private static readonly SolidColorBrush BarBrush = new(Color.FromRgb(0x25, 0x63, 0xEB));
+    private static readonly SolidColorBrush BarBrush = new(Color.FromRgb(0x00, 0x89, 0x7B));
     private static readonly SolidColorBrush LabelBrush = new(Color.FromRgb(0x6B, 0x72, 0x80));
     private static readonly SolidColorBrush ValueLabelBrush = new(Color.FromRgb(0x11, 0x18, 0x27));
 

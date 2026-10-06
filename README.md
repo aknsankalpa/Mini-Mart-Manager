@@ -44,7 +44,7 @@ Also included: an interactive **Dashboard** (KPI cards and five charts, filterab
    ```
    Or run the built executable directly from `bin/Debug/net8.0-windows/RetailFlow.exe`, or press **Start** (F5) in Visual Studio / Rider.
 
-No database setup is needed — `retailflow.db` is created automatically next to the executable the first time the app runs, and seeded with a realistic demo catalog (28 products across 7 categories) and 12 sample sales, so every screen has real data to show immediately.
+No database setup is needed — `retailflow.db` is created automatically next to the executable the first time the app runs, and seeded with a realistic demo catalog (28 products across 7 categories) and about 90 days of sample sales (roughly 250 transactions, ending today), so every chart on the Dashboard shows real trends immediately.
 
 ## Demo
 

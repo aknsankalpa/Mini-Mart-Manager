@@ -9,7 +9,7 @@ namespace RetailFlow.Views.Charts;
 /// <summary>Hand-drawn horizontal bar chart used for the Dashboard's Top Selling Products visualization.</summary>
 public partial class HorizontalBarChartControl : ChartControlBase
 {
-    private static readonly SolidColorBrush BarBrush = new(Color.FromRgb(0x7C, 0x3A, 0xED));
+    private static readonly SolidColorBrush BarBrush = new(Color.FromRgb(0x8E, 0x24, 0xAA));
     private static readonly SolidColorBrush LabelBrush = new(Color.FromRgb(0x11, 0x18, 0x27));
     private static readonly SolidColorBrush ValueLabelBrush = new(Color.FromRgb(0x6B, 0x72, 0x80));
 

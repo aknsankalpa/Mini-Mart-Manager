@@ -7,7 +7,7 @@
         <Setter Property="Padding" Value="16,11"/>
         <Setter Property="Margin" Value="12,2"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#D1D5DB"/>
+        <Setter Property="Foreground" Value="{StaticResource SidebarTextBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -22,7 +22,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#374151"/>
+                <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}"/>
                 <Setter Property="Foreground" Value="White"/>
             </Trigger>
         </Style.Triggers>
@@ -32,7 +32,7 @@
          rounded pill rather than a full-width bar, matched to the card corner radius
          used throughout the rest of the app. -->
     <Style x:Key="NavButtonActiveStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
-        <Setter Property="Background" Value="#2563EB"/>
+        <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
@@ -62,11 +62,11 @@
 
     <!-- Main call-to-action buttons: New Product, Save, Complete Sale, etc. -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-        <Setter Property="Background" Value="#2563EB"/>
+        <Setter Property="Background" Value="{StaticResource BrandBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#1D4ED8"/>
+                <Setter Property="Background" Value="{StaticResource BrandHoverBrush}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -84,11 +84,11 @@
 
     <!-- Destructive/cautionary actions: Deactivate -->
     <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-        <Setter Property="Background" Value="#FEE2E2"/>
-        <Setter Property="Foreground" Value="#DC2626"/>
+        <Setter Property="Background" Value="{StaticResource DangerLightBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource DangerTextBrush}"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FECACA"/>
+                <Setter Property="Background" Value="#FFCDD2"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -124,8 +124,13 @@
     <!-- White card used for the Dashboard's stat tiles and list panels -->
     <Style x:Key="DashboardCardStyle" TargetType="Border">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#E5E7EB"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Direction="270" Opacity="0.12" Color="#000000"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="18"/>
     </Style>
@@ -191,18 +196,18 @@
 
     <!-- Positive/neutral state: Active, Completed -->
     <Style x:Key="StatusBadgeSuccessStyle" TargetType="Border" BasedOn="{StaticResource StatusBadgeBaseStyle}">
-        <Setter Property="Background" Value="#DCFCE7"/>
+        <Setter Property="Background" Value="{StaticResource SuccessLightBrush}"/>
     </Style>
     <Style x:Key="StatusBadgeSuccessTextStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusBadgeTextStyle}">
-        <Setter Property="Foreground" Value="#16A34A"/>
+        <Setter Property="Foreground" Value="{StaticResource SuccessTextBrush}"/>
     </Style>
 
     <!-- Needs-attention state: Inactive, Low stock -->
     <Style x:Key="StatusBadgeWarningStyle" TargetType="Border" BasedOn="{StaticResource StatusBadgeBaseStyle}">
-        <Setter Property="Background" Value="#FEE2E2"/>
+        <Setter Property="Background" Value="{StaticResource DangerLightBrush}"/>
     </Style>
     <Style x:Key="StatusBadgeWarningTextStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusBadgeTextStyle}">
-        <Setter Property="Foreground" Value="#DC2626"/>
+        <Setter Property="Foreground" Value="{StaticResource DangerTextBrush}"/>
     </Style>
 
     <!-- Compact white card used by the Power BI-style Dashboard's chart panels — same look

@@ -85,11 +85,10 @@ public static class DbInitializer
     }
 
     /// <summary>
-    /// 12 completed sales spread across today, yesterday, this week, and earlier this
-    /// month — so Transaction History and the MiniMart Assistant's date-based queries
-    /// ("today's transactions", "this week's sales", a date range) all have something
-    /// meaningful to show right away. Dates are relative to DateTime.Now rather than a
-    /// fixed calendar date, so the demo always looks current whenever it's run.
+    /// A small set of hand-written sales covering today, yesterday, this week, and this
+    /// month, followed by a generated history of about 90 days (see CreateGeneratedSales).
+    /// Dates are relative to DateTime.Today rather than a fixed calendar date, so the demo
+    /// always looks current whenever it's run.
     /// </summary>
     private static List<Sale> CreateSales(List<Product> products)
     {
@@ -131,8 +130,91 @@ public static class DbInitializer
                 (Find("P024"), 1), (Find("P028"), 2)),
         };
 
+        sales.AddRange(CreateGeneratedSales(products));
         return sales;
     }
+
+    /// <summary>
+    /// Generates about 90 days of sales so the Dashboard's trend, category, top-product,
+    /// heatmap, and stock charts show real movement. A fixed random seed makes every fresh
+    /// database identical. Weekends and the most recent three weeks see more sales, staple
+    /// products sell more often than specialty items, and about one sale in seven gets a
+    /// round-number discount. Stock levels are a snapshot and are not reduced by these sales.
+    /// </summary>
+    private static List<Sale> CreateGeneratedSales(List<Product> products)
+    {
+        var random = new Random(2026);
+        var today = DateTime.Today;
+        var popularity = products.Select(p => (Product: p, Weight: PopularityWeight(p.ProductCode))).ToList();
+        var peakHours = new[] { 9, 10, 11, 12, 12, 13, 14, 16, 17, 17, 18, 18, 19, 20 };
+
+        var sales = new List<Sale>();
+
+        for (var daysAgo = 89; daysAgo >= 0; daysAgo--)
+        {
+            var day = today.AddDays(-daysAgo);
+            var isWeekend = day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+            var salesToday = random.Next(1, 4) + (isWeekend ? 2 : 0) + (daysAgo < 21 ? 1 : 0);
+
+            for (var n = 0; n < salesToday; n++)
+            {
+                var items = PickItems(random, popularity);
+                var subtotal = items.Sum(item => item.Product.Price * item.Quantity);
+
+                var discount = random.Next(7) == 0 ? random.Next(1, 11) * 10m : 0m;
+                if (discount > subtotal)
+                {
+                    discount = 0m;
+                }
+
+                var saleTime = day.AddHours(peakHours[random.Next(peakHours.Length)]).AddMinutes(random.Next(60));
+                sales.Add(CreateSale($"{10 + n:D3}", saleTime, discount, items.ToArray()));
+            }
+        }
+
+        return sales;
+    }
+
+    private static List<(Product Product, int Quantity)> PickItems(Random random, List<(Product Product, int Weight)> popularity)
+    {
+        var itemCount = random.Next(1, 4);
+        var picked = new List<(Product Product, int Quantity)>();
+
+        while (picked.Count < itemCount)
+        {
+            var product = WeightedPick(random, popularity);
+            if (picked.Any(item => item.Product.ProductCode == product.ProductCode))
+            {
+                continue;
+            }
+
+            picked.Add((product, random.Next(1, 4)));
+        }
+
+        return picked;
+    }
+
+    private static Product WeightedPick(Random random, List<(Product Product, int Weight)> popularity)
+    {
+        var roll = random.Next(popularity.Sum(p => p.Weight));
+        foreach (var (product, weight) in popularity)
+        {
+            roll -= weight;
+            if (roll < 0)
+            {
+                return product;
+            }
+        }
+
+        return popularity[^1].Product;
+    }
+
+    private static int PopularityWeight(string productCode) => productCode switch
+    {
+        "P001" or "P003" or "P007" or "P009" or "P015" or "P017" or "P020" or "P021" => 4,
+        "P002" or "P006" or "P016" or "P018" or "P024" or "P025" or "P027" or "P028" => 1,
+        _ => 2
+    };
 
     /// <summary>
     /// Builds one Sale with its SaleItems, computing SubTotal and Total from the given

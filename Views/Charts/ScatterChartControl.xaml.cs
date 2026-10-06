@@ -22,7 +22,7 @@ namespace RetailFlow.Views.Charts;
 /// </summary>
 public partial class ScatterChartControl : ChartControlBase
 {
-    private static readonly SolidColorBrush NormalBrush = new(Color.FromRgb(0x25, 0x63, 0xEB));
+    private static readonly SolidColorBrush NormalBrush = new(Color.FromRgb(0x39, 0x49, 0xAB));
     private static readonly SolidColorBrush LowStockBrush = new(Color.FromRgb(0xDC, 0x26, 0x26));
     private static readonly SolidColorBrush AxisBrush = new(Color.FromRgb(0xE5, 0xE7, 0xEB));
     private static readonly SolidColorBrush GridBrush = new(Color.FromRgb(0xF3, 0xF4, 0xF6));

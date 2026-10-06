@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Central colour palette. Every colour used by the shared styles, the sidebar,
+         the page background and the charts comes from here, so the whole look can be
+         re-themed by editing this one file. Hues follow the standard Material palette. -->
+
+    <!-- Brand: primary actions, selected states, key highlights (Indigo) -->
+    <SolidColorBrush x:Key="BrandBrush" Color="#3949AB"/>
+    <SolidColorBrush x:Key="BrandHoverBrush" Color="#303F9F"/>
+    <SolidColorBrush x:Key="BrandLightBrush" Color="#E8EAF6"/>
+
+    <!-- Accent: logo tile, secondary highlights (Teal) -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#00897B"/>
+
+    <!-- Status colours -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#43A047"/>
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="SuccessLightBrush" Color="#E8F5E9"/>
+
+    <SolidColorBrush x:Key="WarningBrush" Color="#FB8C00"/>
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="WarningLightBrush" Color="#FFF3E0"/>
+
+    <SolidColorBrush x:Key="DangerBrush" Color="#E53935"/>
+    <SolidColorBrush x:Key="DangerTextBrush" Color="#C62828"/>
+    <SolidColorBrush x:Key="DangerLightBrush" Color="#FFEBEE"/>
+
+    <SolidColorBrush x:Key="InfoBrush" Color="#1E88E5"/>
+    <SolidColorBrush x:Key="PurpleBrush" Color="#8E24AA"/>
+
+    <!-- Layout surfaces -->
+    <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F3F5FB"/>
+    <SolidColorBrush x:Key="SidebarBrush" Color="#1A237E"/>
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#283593"/>
+    <SolidColorBrush x:Key="SidebarActiveBrush" Color="#5C6BC0"/>
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#C5CAE9"/>
+
+</ResourceDictionary>

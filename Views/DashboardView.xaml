@@ -71,7 +71,7 @@
                         <TextBlock Text="SALES (SELECTED PERIOD)" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
                     <TextBlock Text="{Binding PeriodSalesTotal, StringFormat='Rs. {0:N2}'}"
-                               FontSize="22" FontWeight="Bold" Foreground="#16A34A"/>
+                               FontSize="22" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/>
                 </StackPanel>
             </Border>
 
@@ -83,7 +83,7 @@
                         </Border>
                         <TextBlock Text="ACTIVE PRODUCTS" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding ActiveProductCount}" FontSize="22" FontWeight="Bold" Foreground="#2563EB"/>
+                    <TextBlock Text="{Binding ActiveProductCount}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource BrandBrush}"/>
                 </StackPanel>
             </Button>
 
@@ -107,7 +107,7 @@
                         </Border>
                         <TextBlock Text="BEST SELLING PRODUCT" Style="{StaticResource DashboardStatLabelStyle}" VerticalAlignment="Center" Margin="0"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding BestSellingProductName}" FontSize="15" FontWeight="Bold" Foreground="#111827"
+                    <TextBlock Text="{Binding BestSellingProductName}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource PurpleBrush}"
                                TextTrimming="CharacterEllipsis" Visibility="{Binding HasBestSellingProduct, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     <TextBlock Text="{Binding BestSellingUnits, StringFormat='{}{0} units sold'}" FontSize="11" Foreground="#6B7280"
                                Visibility="{Binding HasBestSellingProduct, Converter={StaticResource BoolToVisibilityConverter}}"/>

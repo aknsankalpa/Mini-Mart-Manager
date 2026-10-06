@@ -9,7 +9,7 @@ namespace RetailFlow.Views.Charts;
 /// <summary>Hand-drawn line chart used for the Dashboard's Sales Trend visualization.</summary>
 public partial class LineChartControl : ChartControlBase
 {
-    private static readonly SolidColorBrush LineBrush = new(Color.FromRgb(0x25, 0x63, 0xEB));
+    private static readonly SolidColorBrush LineBrush = new(Color.FromRgb(0x39, 0x49, 0xAB));
     private static readonly SolidColorBrush GridBrush = new(Color.FromRgb(0xE5, 0xE7, 0xEB));
     private static readonly SolidColorBrush LabelBrush = new(Color.FromRgb(0x6B, 0x72, 0x80));
 

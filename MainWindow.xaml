@@ -17,17 +17,17 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar navigation -->
-        <Border Grid.Column="0" Background="#1F2937">
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="20,20,16,30">
-                    <Border Width="36" Height="36" CornerRadius="8" Background="#2563EB" Margin="0,0,10,0">
+                    <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource AccentBrush}" Margin="0,0,10,0">
                         <TextBlock Text="🛒" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="MiniMart Manager" FontSize="16" FontWeight="Bold"
                                    Foreground="White" TextWrapping="Wrap" MaxWidth="130"/>
                         <TextBlock Text="Inventory &amp; Sales" FontSize="11"
-                                   Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                                   Foreground="{StaticResource SidebarTextBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -52,7 +52,7 @@
         </Border>
 
         <!-- Page content -->
-        <Grid Grid.Column="1" Background="#F3F4F6">
+        <Grid Grid.Column="1" Background="{StaticResource PageBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>

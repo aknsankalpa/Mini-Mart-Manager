@@ -23,7 +23,7 @@ public partial class HeatmapControl : ChartControlBase
 
     private static readonly SolidColorBrush EmptyCellBrush = new(Color.FromRgb(0xF3, 0xF4, 0xF6));
     private static readonly SolidColorBrush LabelBrush = new(Color.FromRgb(0x6B, 0x72, 0x80));
-    private static readonly Color HeatColor = Color.FromRgb(0x25, 0x63, 0xEB);
+    private static readonly Color HeatColor = Color.FromRgb(0x39, 0x49, 0xAB);
 
     public HeatmapControl()
     {
