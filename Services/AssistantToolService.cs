@@ -19,7 +19,7 @@ public class AssistantToolService
     {
         Tool("get_product_stock",
             "Current stock level of product(s) whose name matches the text.",
-            new { product_name = Str("Product name or part of it, e.g. 'tea' or 'Green Tea 250g'.") },
+            new { product_name = Str("Just the product name or keyword, e.g. 'tea' or 'Green Tea 250g' — not the whole question.") },
             "product_name"),
 
         Tool("get_low_stock",
@@ -39,10 +39,15 @@ public class AssistantToolService
             "How many units of a product were sold, and the revenue, over a period.",
             new
             {
-                product_name = Str("Product name as the user wrote it, e.g. 'toothpaste'."),
+                product_name = Str("Just the product name or keyword, e.g. 'toothpaste' — not the whole question."),
                 days = Int("Number of days including today: 1 = today, 30 = last 30 days.")
             },
             "product_name", "days"),
+
+        Tool("get_peak_sales_time",
+            "Which day of the week, and which time of day, has the most sales (the same breakdown as the Sales Heatmap chart).",
+            new { days = Int("Number of days including today to look back over. Use at least 30, ideally 90, for a reliable weekly pattern — 7 days covers each weekday only once.") },
+            "days"),
 
         Tool("get_top_products",
             "Best-selling products by units sold over a period.",
@@ -70,6 +75,7 @@ public class AssistantToolService
             "get_units_sold" => UnitsSold(GetString(arguments, "product_name"), GetDays(arguments)),
             "get_top_products" => await TopProductsAsync(GetDays(arguments), GetInt(arguments, "count", 5)),
             "get_transactions" => Transactions(GetDays(arguments)),
+            "get_peak_sales_time" => await PeakSalesTimeAsync(GetDays(arguments)),
             _ => $"Unknown function '{name}'."
         };
     }
@@ -148,7 +154,52 @@ public class AssistantToolService
             + string.Join("\n", recent);
     }
 
-    /// <summary>Matches a product by name; a plural such as "toothpastes" falls back to its singular.</summary>
+    private async Task<string> PeakSalesTimeAsync(int days)
+    {
+        var (from, to, description) = Period(days);
+        var filter = new DashboardFilter { StartDate = from, EndDate = to };
+        var cells = await _dashboardService.GetSalesHeatmapAsync(filter);
+
+        if (cells.Count == 0)
+        {
+            return $"No sales in {description}.";
+        }
+
+        var topCell = cells.OrderByDescending(c => c.Total).First();
+        var byDay = cells
+            .GroupBy(c => c.Day)
+            .Select(g => new { Day = g.Key, Total = g.Sum(c => c.Total) })
+            .OrderByDescending(g => g.Total)
+            .ToList();
+        var topDay = byDay.First();
+
+        var dayBreakdown = string.Join(", ", byDay.Select(d => $"{d.Day}: Rs. {d.Total:N2}"));
+
+        return $"In {description}, the single busiest day and time window was {topCell.Day} "
+            + $"{FormatHourWindow(topCell.HourBucketStart)}, with Rs. {topCell.Total:N2} in sales. "
+            + $"Across the whole period, {topDay.Day} was the busiest day overall, with Rs. {topDay.Total:N2} in total sales. "
+            + $"Totals by day of week: {dayBreakdown}.";
+    }
+
+    /// <summary>Formats a 4-hour heatmap bucket, e.g. 14 -&gt; "2 PM-6 PM".</summary>
+    private static string FormatHourWindow(int hourBucketStart)
+    {
+        static string FormatHour(int hour24)
+        {
+            var period = hour24 < 12 || hour24 == 24 ? "AM" : "PM";
+            var h = hour24 % 12;
+            if (h == 0) h = 12;
+            return $"{h} {period}";
+        }
+
+        return $"{FormatHour(hourBucketStart)}-{FormatHour(hourBucketStart + 4)}";
+    }
+
+    /// <summary>
+    /// Matches a product by name. Handles a plural such as "toothpastes" by falling back to
+    /// its singular, and strips common question words (the model sometimes sends the whole
+    /// question — "how many green tea are available in" — instead of just "green tea").
+    /// </summary>
     private List<Product> FindProducts(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -156,13 +207,47 @@ public class AssistantToolService
             return new List<Product>();
         }
 
-        var matches = _productService.Search(name, includeInactive: false);
-        if (matches.Count == 0 && name.EndsWith('s'))
+        var cleaned = StripStopWords(name);
+
+        var matches = _productService.Search(cleaned, includeInactive: false);
+        if (matches.Count == 0 && cleaned.EndsWith('s'))
         {
-            matches = _productService.Search(name[..^1], includeInactive: false);
+            matches = _productService.Search(cleaned[..^1], includeInactive: false);
+        }
+
+        if (matches.Count == 0)
+        {
+            // Still nothing: try each remaining significant word on its own, longest first.
+            foreach (var word in cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                         .Where(w => w.Length > 2)
+                         .OrderByDescending(w => w.Length))
+            {
+                matches = _productService.Search(word, includeInactive: false);
+                if (matches.Count > 0)
+                {
+                    break;
+                }
+            }
         }
 
         return matches;
+    }
+
+    private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "how", "many", "much", "do", "we", "have", "has", "are", "is", "there", "available",
+        "in", "of", "the", "a", "an", "left", "for", "any", "please", "me", "tell", "stock",
+        "stocked", "remaining", "got", "still"
+    };
+
+    private static string StripStopWords(string raw)
+    {
+        var words = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => w.Trim('?', '.', ','))
+            .Where(w => w.Length > 0 && !StopWords.Contains(w));
+
+        var cleaned = string.Join(' ', words).Trim();
+        return cleaned.Length > 0 ? cleaned : raw;
     }
 
     /// <summary>"days" counts today as day 1, so 30 means today and the 29 days before it.</summary>

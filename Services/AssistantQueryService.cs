@@ -196,6 +196,8 @@ public class AssistantQueryService
         new(@"^how much (.+?) is available$"),
         new(@"^how much (.+?) do we have$"),
         new(@"^how many (.+?)(?: products)? are in stock$"),
+        new(@"^how many (.+?) (?:are|is) available(?: in stock)?$"),
+        new(@"^how many (.+?) do we have(?: in stock)?$"),
         new(@"^(.+?)\s+stock$"),
         new(@"^(.+?)\s+quantity$"),
         new(@"^(.+?)\s+available$"),
@@ -225,6 +227,15 @@ public class AssistantQueryService
             var term = match.Groups[1].Value.Trim();
             term = Regex.Replace(term, @"^(products|items)\s+", "");
             term = Regex.Replace(term, @"\s+(products|items)$", "");
+
+            // The loose catch-all templates (e.g. "(.+?) stock$") can over-capture a whole
+            // question — "how many green tea are available in" — when no more specific
+            // template above matched first. Trim leading/trailing filler so what's left is
+            // just the product name.
+            term = Regex.Replace(term, @"^(how many|how much)\s+", "");
+            term = Regex.Replace(term, @"\s+(are|is)\s+available(?:\s+in)?$", "");
+            term = Regex.Replace(term, @"\s+(do we have|are there|is there)$", "");
+            term = term.Trim();
 
             if (!string.IsNullOrWhiteSpace(term))
             {
