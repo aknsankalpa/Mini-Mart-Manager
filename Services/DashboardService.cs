@@ -36,6 +36,22 @@ public class DashboardService
         return (sales.Sum(s => s.Total), sales.Count);
     }
 
+    /// <summary>Units sold and net revenue for the given products within a date range.</summary>
+    public (int Units, decimal Revenue) GetUnitsSold(IEnumerable<int> productIds, DateTime fromDate, DateTime toDate)
+    {
+        using var context = new AppDbContext();
+
+        var ids = productIds.ToList();
+        var exclusiveEnd = toDate.Date.AddDays(1);
+        var items = context.SaleItems
+            .Include(si => si.Sale)
+            .Where(si => ids.Contains(si.ProductId) && si.Sale.SaleDate >= fromDate.Date && si.Sale.SaleDate < exclusiveEnd)
+            .Select(si => new { si.Quantity, si.LineTotal, si.Sale.SubTotal, si.Sale.Discount })
+            .ToList();
+
+        return (items.Sum(i => i.Quantity), items.Sum(i => NetRevenue(i.LineTotal, i.SubTotal, i.Discount)));
+    }
+
     /// <summary>All distinct categories among active products, for the Category slicer.</summary>
     public List<string> GetCategories()
     {

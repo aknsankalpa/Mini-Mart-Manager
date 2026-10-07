@@ -22,6 +22,9 @@ public class AssistantViewModel : ViewModelBase
     private string _inputText = string.Empty;
     public string InputText { get => _inputText; set => SetField(ref _inputText, value); }
 
+    private bool _isBusy;
+    public bool IsBusy { get => _isBusy; private set => SetField(ref _isBusy, value); }
+
     public ICommand SendCommand { get; }
     public ICommand QuickActionCommand { get; }
 
@@ -30,7 +33,7 @@ public class AssistantViewModel : ViewModelBase
 
     public AssistantViewModel()
     {
-        SendCommand = new RelayCommand(_ => Send());
+        SendCommand = new RelayCommand(_ => _ = SendAsync(), _ => !IsBusy);
         QuickActionCommand = new RelayCommand(parameter =>
         {
             if (parameter is not string quickQuery)
@@ -45,7 +48,7 @@ public class AssistantViewModel : ViewModelBase
             // user can type the rest and press Enter themselves.
             if (!quickQuery.EndsWith(' '))
             {
-                Send();
+                _ = SendAsync();
             }
         });
 
@@ -56,7 +59,7 @@ public class AssistantViewModel : ViewModelBase
         });
     }
 
-    private void Send()
+    private async Task SendAsync()
     {
         var userQuery = InputText.Trim();
 
@@ -69,7 +72,24 @@ public class AssistantViewModel : ViewModelBase
         Messages.Add(new AssistantChatMessage { IsUser = true, Text = userQuery });
         InputText = string.Empty;
 
-        var response = _assistantQueryService.Interpret(userQuery);
+        // The AI model can take several seconds, so the screen shows a placeholder and
+        // stays responsive instead of freezing until the answer arrives.
+        var thinking = new AssistantChatMessage { IsUser = false, Text = "Thinking…" };
+        Messages.Add(thinking);
+
+        AssistantResponse response;
+        IsBusy = true;
+        CommandManager.InvalidateRequerySuggested();
+        try
+        {
+            response = await _assistantQueryService.InterpretAsync(userQuery);
+        }
+        finally
+        {
+            IsBusy = false;
+            Messages.Remove(thinking);
+            CommandManager.InvalidateRequerySuggested();
+        }
 
         ICommand? actionCommand = null;
         if (response.NavigationTarget is not null)

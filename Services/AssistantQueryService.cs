@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using RetailFlow.Helpers;
 using RetailFlow.Models;
 
 namespace RetailFlow.Services;
@@ -24,6 +25,13 @@ public class AssistantQueryService
     private readonly ProductService _productService = new();
     private readonly SalesService _salesService = new();
     private readonly DashboardService _dashboardService = new();
+    private readonly AiAssistant _aiAssistant = new();
+
+    private const string OutOfScopeMessage =
+        "I can only answer questions about this store: products, stock, sales, transactions and the dashboard.";
+
+    private const string AiUnavailableMessage =
+        "The AI assistant isn't available right now. Make sure Ollama is running, or try a simple command such as \"low stock\" or \"tea stock\".";
 
     private static readonly string[] TransactionSynonyms = { "transaction", "transactions", "sales history", "sale history" };
 
@@ -50,6 +58,46 @@ public class AssistantQueryService
             // Whatever went wrong internally, the user only ever sees a plain-language
             // message — never a raw exception or database error.
             return new AssistantResponse { Message = "Sorry, I ran into a problem handling that request. Please try again." };
+        }
+    }
+
+    /// <summary>
+    /// Clear commands (navigation, "low stock", "tea stock", ...) are answered by the
+    /// deterministic rules above, which is fast and predictable. Anything the rules don't
+    /// recognise goes to the local AI model, which answers from the store's data through
+    /// AssistantToolService. If Ollama isn't running, the user gets a plain message instead.
+    /// </summary>
+    public async Task<AssistantResponse> InterpretAsync(string rawQuery)
+    {
+        if (string.IsNullOrWhiteSpace(rawQuery))
+        {
+            return new AssistantResponse { Message = "Please enter a question or command." };
+        }
+
+        var query = new AssistantQuery { OriginalQuery = rawQuery };
+        DetectIntent(Normalize(rawQuery), query);
+
+        // Exact commands stay on the rules. Questions the rules only match by keyword
+        // (e.g. "transactions" inside a longer sentence) go to the model instead.
+        if (query.Intent is not (AssistantIntent.Unknown or AssistantIntent.TransactionQuery or AssistantIntent.SalesSummary))
+        {
+            return Interpret(rawQuery);
+        }
+
+        try
+        {
+            var answer = await _aiAssistant.AnswerAsync(rawQuery);
+            return new AssistantResponse
+            {
+                Message = answer ?? OutOfScopeMessage
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("AssistantQueryService.InterpretAsync", ex);
+            return query.Intent == AssistantIntent.Unknown
+                ? new AssistantResponse { Message = AiUnavailableMessage }
+                : Interpret(rawQuery);
         }
     }
 
